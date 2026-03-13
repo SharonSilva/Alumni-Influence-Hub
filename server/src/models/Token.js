@@ -67,7 +67,7 @@ class Token {
         return record;
     }
 
-    static ocnsumeResetToken(raw){
+    static consumeResetToken(raw){
         const record = db.passwordResets.find(r =>r.token === raw);
         if(record) record.used = true;
     }
