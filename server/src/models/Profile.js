@@ -1,104 +1,104 @@
-//Defines URL paths and validation rules only 
-//All logic delegated to ProfileController 
 
-const express =require('express');
-const path = require('path');
-const multer = require('multer');
-const {body} = require('express-validator');
-const ctrl = require('../controllers/profileController');
-const {authenticate} = require('../middleware/auth');
+ // All data access for profiles and their sub-resources:
+ //   degrees, certifications, licences, courses, employmentHistory
+ 
+ // Contains no HTTP logic — only data retrieval and mutation methods.
+ 
 
-const router = express.Router();
-router.use(authenticate);
+const { db, id } = require('../db');
+
+class Profile {
+  // Core Profile 
+
+  static findByUserId(userId) {
+    return db.profiles.find(p => p.userId === userId) || null;
+  }
+
+  static findById(profileId) {
+    return db.profiles.find(p => p.id === profileId) || null;
+  }
+
+ //Update allow field on profile 
+  static update(userId, updates) {
+    const profile = Profile.findByUserId(userId);
+    if (!profile) return null;
+    const allowed = ['bio', 'linkedInUrl', 'currentRole', 'currentEmployer', 'location', 'graduationYear', 'photoUrl'];
+    allowed.forEach(f => { if (updates[f] !== undefined) profile[f] = updates[f]; });
+    Profile.recalculateCompletion(profile);
+    return profile;
+  }
+
+   // Recalculate profile completion percentage and update profileCompleted flag.
+   
+  static recalculateCompletion(profile) {
+    const checks = [
+      !!profile.bio,
+      !!profile.linkedInUrl,
+      !!profile.photoUrl,
+      !!profile.currentRole,
+      !!profile.currentEmployer,
+      !!profile.graduationYear,
+      db.degrees.some(d => d.profileId === profile.id),
+      db.employmentHistory.some(e => e.profileId === profile.id),
+    ];
+    const done = checks.filter(Boolean).length;
+    profile.profileCompleted = done === checks.length;
+    return Math.round((done / checks.length) * 100);
+  }
 
 
-// Multer (photo upload)
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, process.env.UPLOAD_DIR || './uploads'),
-    filename:  (req, file, cb) => cb(null, `profile-${req.user.id}-${Date.now()}${path.extname(file.originalname).toLowerCase()}`),
-});
+    // Build the full profile view including all sub-resources.
+   
+  static buildFullView(profile) {
+    const percent = Profile.recalculateCompletion(profile);
+    return {
+      ...profile,
+      completionPercent:  percent,
+      degrees:            Profile.getDegrees(profile.id),
+      certifications:     Profile.getCertifications(profile.id),
+      licences:           Profile.getLicences(profile.id),
+      courses:            Profile.getCourses(profile.id),
+      employmentHistory:  Profile.getEmployment(profile.id),
+    };
+  }
 
-const upload = multer({
-    storage,
-    limits:{fileSize: (parseInt(process.env.MAX_FILE_SIZE_MB) || 5) * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const allowed = ['.jpg', 'jpeg', '.png', '.webp'];
-        allowed.includes(path.extname(file.originalname).toLowerCase())
-        ? cb(null, true)
-        : cb(new Error('Only jpg, jpeg,png, webp allowed'));
-    },
-});
+  //  Sub-resource generic helpers 
 
-// Core Profile 
-router.get('/', ctrl.getProfile);
-router.put('/',[
-    body('bio').optional().trim(),isLength({max:1000}),
-    body('linkedInUrl').optional().isURL(),
-    body('currentRole').optional().trim(),
-    body('currentEmployer').optional().trim(),
-    body('location').optional().trim(),
-    body('graduationYear').optional().isInt({min:1950, max:new Date().getFullYear()}),
 
-], ctrl.updateProfile);
+  static addSubResource(collection, profileId, data) {
+    const newItem = { id: id(), profileId, ...data, createdAt: new Date().toISOString() };
+    db[collection].push(newItem);
+    const profile = Profile.findById(profileId);
+    if (profile) Profile.recalculateCompletion(profile);
+    return newItem;
+  }
 
-router.post('/photo',(req,res)=>{
-    upload.single('photo')(req,res,error =>{
-        if(err) return res.status(400).json({success: false, message: err.message});
-        ctrl.uploadPhoto(req,res);
-    });
-});
-router.get('/completion', ctrl.getCompletion);
 
-//Sub resource route builder
-function subRoutes(path,collectionKey, label, postValidators){
-    const c = ctrl.subResourceController(collectionKey, label);
-    router.get(path, c.list);
-    router.post(path, postValidators, c.create);
-    router.put(`${path}/:itemId`, c.update);
-    router.delete(`${path}/:itemId`, c.remove);
+  static updateSubResource(collection, itemId, profileId, updates) {
+    const item = db[collection].find(i => i.id === itemId && i.profileId === profileId);
+    if (!item) return null;
+    const fields = Object.keys(updates);
+    fields.forEach(f => { if (updates[f] !== undefined) item[f] = updates[f]; });
+    item.updatedAt = new Date().toISOString();
+    return item;
+  }
+
+
+  static deleteSubResource(collection, itemId, profileId) {
+    const idx = db[collection].findIndex(i => i.id === itemId && i.profileId === profileId);
+    if (idx === -1) return false;
+    db[collection].splice(idx, 1);
+    const profile = Profile.findById(profileId);
+    if (profile) Profile.recalculateCompletion(profile);
+    return true;
+  }
+
+  // Named sub-resource accessors 
+  static getDegrees(profileId)        { return db.degrees.filter(d => d.profileId === profileId); }
+  static getCertifications(profileId) { return db.certifications.filter(c => c.profileId === profileId); }
+  static getLicences(profileId)       { return db.licences.filter(l => l.profileId === profileId); }
+  static getCourses(profileId)        { return db.courses.filter(c => c.profileId === profileId); }
+  static getEmployment(profileId)     { return db.employmentHistory.filter(e => e.profileId === profileId); }
 }
 
-subRoutes('/degrees', 'degrees', 'Degree',[
-    body('title').trim().notEmpty(),
-    body('institution').trim.notEmpty(),
-    body('url').optional().isURL(),
-    body('completedDate').optional().isISO8601(),
-]);
-
-subRoutes('/certifications', 'certifications', 'Certification',[
-    body('name').trim().notEmpty(),
-    body('isuser').trim().notEmpty(),
-    body('url').optional().isURL(),
-    body('completedDate').optional().isISO8601(),
-]);
-
-subRoutes('/licenses', 'licenses','License',[
-    body('name').trim().notEmpty(),
-    body('awardingBody').trim().notEmpty(),
-    body('url').optional().isURL(),
-    body('completedDate').optional().isISO8601(),
-]);
-
-subRoutes('/course', 'courses', 'Course', [
-    body('name').trim().notEmpty(),
-    body('provider').trim().notEmpty(),
-    body('url').optional().isURL(),
-    body('completedDate').optional().isISO8601(),
-]);
-
-subRoutes('/employment', 'employmentHistory', 'EmploymentRecord', [
-    body('jobTitle').trim().notEmpty(),
-    body('employer').trim().notEmpty(),
-    body('startDate').isISO8601(),
-    body('endDate').optional().isISO8601(),
-]);
-
-subRoutes('/employment', 'eploymentHistory', 'Employment record', [
-    body('jobTitle').trim().notEmpty(),
-    body('employer').trim().notEmpty(),
-    body('startDate').isISO8601(),
-    body('EndDate').optional().isISO8601(),
-    body('current').optional().isBoolean(),
-]);
-
-module.exports = router;
+module.exports = Profile;
