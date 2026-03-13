@@ -1,6 +1,6 @@
 //No HTTP or Express knowleadge,Controllers call
 
-const {db,id, today, dataStr} = require('../db');
+const {db,id, today, dateStr} = require('../db');
 const BID_CLOSE_HOUR = () => parseInt(process.env.BID_CLOSE_HOUR_UTC || '18');
 
 class Bid {
@@ -148,7 +148,7 @@ class Bid {
         winProfile.appearanceCount += 1;
      }
 
-     //Stor winner record
+     //Store winner record
      const winnerRecord = {
         id: id(),
         userId: winnerBid.userId,
