@@ -1,94 +1,58 @@
- 
- // Provides three middleware functions:
- //  authenticate    – Validates a JWT Bearer token (alumni / admin sessions)
- //  authenticateKey – Validates a Developer API key (public client access)
- //   requireAdmin    – Ensures the authenticated user has role 'admin'
+
+ // Defines URL paths and input validation rules only.
+ // All request handling is delegated to authController.
  
 
+const express     = require('express');
+const { body, query } = require('express-validator');
+const ctrl        = require('../controllers/authController');
+const { authenticate } = require('../middleware/auth');
 
-const jwt = require('jsonwebtoken');
-const { db } = require('../db');
+const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'eastminster-alumni-secret-changeme';
+const DOMAIN = process.env.UNIVERSITY_DOMAIN || 'alumni.eastminster.ac.uk';
 
-// JWT Authentication 
-function authenticate(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: 'Missing or invalid Authorization header. Format: Bearer <token>',
-    });
-  }
+// Reusable strong-password validator 
+const passwordRules = body('password')
+  .isLength({ min: 8 }).withMessage('Minimum 8 characters')
+  .matches(/[A-Z]/).withMessage('Must contain an uppercase letter')
+  .matches(/[0-9]/).withMessage('Must contain a number')
+  .matches(/[^A-Za-z0-9]/).withMessage('Must contain a special character');
 
-  const token = authHeader.split(' ')[1];
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    const user = db.users.find(u => u.id === payload.userId);
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Token valid but user not found' });
-    }
-    req.user = user;
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      success: false,
-      message: err.name === 'TokenExpiredError' ? 'Token has expired' : 'Invalid token',
-    });
-  }
-}
+router.post('/register', [
+  body('email')
+    .isEmail().withMessage('Valid email required')
+    .normalizeEmail({ gmail_dots: false })
+    .custom(email => {
+      if (!email.endsWith(`@${DOMAIN}`) && !email.endsWith('@eastminster.ac.uk'))
+        throw new Error(`Must use a @${DOMAIN} university email`);
+      return true;
+    }),
+  passwordRules,
+  body('name').trim().notEmpty().withMessage('Name is required'),
+], ctrl.register);
 
-// API Key Authentication 
+router.get('/verify-email', [
+  query('token').notEmpty().withMessage('Token required'),
+], ctrl.verifyEmail);
 
-function authenticateKey(requiredScopes = []) {
-  return (req, res, next) => {
-    const key = req.headers['x-api-key'];
-    if (!key) {
-      return res.status(401).json({ success: false, message: 'Missing X-API-Key header' });
-    }
+router.post('/login', [
+  body('email').isEmail().normalizeEmail({ gmail_dots: false }),
+  body('password').notEmpty(),
+], ctrl.login);
 
-    const apiKey = db.apiKeys.find(k => k.key === key);
-    if (!apiKey) {
-      return res.status(401).json({ success: false, message: 'Invalid API key' });
-    }
-    if (!apiKey.active) {
-      return res.status(403).json({ success: false, message: 'API key has been revoked' });
-    }
+router.post('/logout', authenticate, ctrl.logout);
 
-    // Scope check
-    if (requiredScopes.length > 0) {
-      const hasAll = requiredScopes.every(s => apiKey.scopes.includes(s));
-      if (!hasAll) {
-        return res.status(403).json({
-          success: false,
-          message: `Insufficient scope. Required: ${requiredScopes.join(', ')}`,
-        });
-      }
-    }
+router.post('/forgot-password', [
+  body('email').isEmail().normalizeEmail({ gmail_dots: false }),
+], ctrl.forgotPassword);
 
-    // Log usage
-    const { id: genId } = require('../db');
-    apiKey.lastUsedAt = new Date().toISOString();
-    db.apiUsageLogs.push({
-      id:         genId(),
-      apiKeyId:   apiKey.id,
-      endpoint:   req.path,
-      method:     req.method,
-      timestamp:  new Date().toISOString(),
-      statusCode: null, // filled by response hook in routes if needed
-    });
+router.post('/reset-password', [
+  body('token').notEmpty(),
+  body('password')
+    .isLength({ min: 8 }).matches(/[A-Z]/).matches(/[0-9]/).matches(/[^A-Za-z0-9]/),
+], ctrl.resetPassword);
 
-    req.apiKey = apiKey;
-    next();
-  };
-}
+router.get('/me', authenticate, ctrl.getMe);
 
-//Admin Guard 
-function requireAdmin(req, res, next) {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Admin access required' });
-  }
-  next();
-}
-
-module.exports = { authenticate, authenticateKey, requireAdmin, JWT_SECRET };
+module.exports = router;
