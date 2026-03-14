@@ -1,7 +1,3 @@
-
-// Handles public API endpoints 
- 
-
 const { db, today } = require('../db');
 const Profile       = require('../models/Profile');
 
@@ -15,7 +11,7 @@ function getFeatured(req, res) {
 
   const { password, ...safeUser } = user;
   const fullProfile = Profile.buildFullView(profile);
-  delete fullProfile.walletBalance; 
+  delete fullProfile.walletBalance; // never expose financial data publicly
 
   const featuredSponsors = db.sponsorships
     .filter(s => s.profileId === profile.id && s.status === 'accepted')

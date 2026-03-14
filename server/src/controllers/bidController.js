@@ -1,8 +1,3 @@
-
-//  Handles HTTP req/res for the bidding system.
-//  All business rules and data access are delegated to Bid model.
-
-
 const { validationResult } = require('express-validator');
 const Bid     = require('../models/Bid');
 const Profile = require('../models/Profile');
@@ -19,7 +14,7 @@ function handleValidation(req, res) {
   return true;
 }
 
-// ─── getTomorrowSlot 
+//  getTomorrowSlot 
 function getTomorrowSlot(req, res) {
   const { db } = require('../db');
   const tomorrow       = dateStr(1);
@@ -39,7 +34,7 @@ function getTomorrowSlot(req, res) {
         id:        myBidToday.id,
         status:    myBidToday.status,
         isWinning: Bid.isCurrentlyWinning(req.user.id),
-        // amount intentionally omitted (blind bidding)
+        // amount omitted blind bidding
       } : null,
       monthlyStatus: {
         winsThisMonth:    wins,
@@ -51,7 +46,7 @@ function getTomorrowSlot(req, res) {
   });
 }
 
-// ─── placeBid 
+// placeBid 
 function placeBid(req, res) {
   if (!handleValidation(req, res)) return;
   if (req.user.role !== 'alumni') {
@@ -86,15 +81,15 @@ function placeBid(req, res) {
       feedback: {
         isCurrentlyWinning: winning,
         message: winning
-          ? '🏆 You are currently the highest bidder!'
-          : '⚠️  You are not currently the highest bidder. Consider increasing your bid.',
+          ? ' You are currently the highest bidder!'
+          : '  You are not currently the highest bidder. Consider increasing your bid.',
       },
       monthlyStatus: { winsThisMonth: wins, maxAllowed: max, slotsRemaining: max - wins },
     },
   });
 }
 
-// ─── updateBid
+//updateBid 
 function updateBid(req, res) {
   if (!handleValidation(req, res)) return;
   if (!Bid.isBiddingOpen()) {
@@ -126,13 +121,13 @@ function updateBid(req, res) {
       bid: { id: updated.id, bidDate: updated.bidDate, status: updated.status },
       feedback: {
         isCurrentlyWinning: winning,
-        message: winning ? '🏆 You are now the highest bidder!' : '⚠️  Still not the highest bidder.',
+        message: winning ? ' You are now the highest bidder!' : '  Still not the highest bidder.',
       },
     },
   });
 }
 
-// ─── cancelBid 
+//  cancelBid 
 function cancelBid(req, res) {
   if (!Bid.isBiddingOpen()) {
     return res.status(400).json({ success: false, message: 'Bidding has closed — bids cannot be cancelled.' });
@@ -146,7 +141,7 @@ function cancelBid(req, res) {
   res.json({ success: true, message: 'Bid cancelled. No charge applied.' });
 }
 
-// ─── getBidStatus 
+// getBidStatus 
 function getBidStatus(req, res) {
   const myBid = Bid.findTodayBidByUser(req.user.id);
   if (!myBid) {
@@ -165,12 +160,12 @@ function getBidStatus(req, res) {
   });
 }
 
-// ─── getBidHistory
+// getBidHistory 
 function getBidHistory(req, res) {
   res.json({ success: true, data: Bid.getUserBidHistory(req.user.id) });
 }
 
-// ─── getMonthlyStatus 
+// getMonthlyStatis
 function getMonthlyStatus(req, res) {
   const wins     = Bid.monthlyWinCount(req.user.id);
   const max      = Bid.maxMonthlyAppearances(req.user.id);
@@ -187,7 +182,7 @@ function getMonthlyStatus(req, res) {
   });
 }
 
-// ─── resolveAuction (Admin)
+// resolve auction 
 async function resolveAuction(req, res) {
   const { db } = require('../db');
   const displayDate = dateStr(1);
@@ -205,7 +200,7 @@ async function resolveAuction(req, res) {
     return res.json({ success: true, message: msg });
   }
 
-  // Email notifications (non-blocking)
+  // Email notifications which are non-blocking 
   const winUser = User.findById(result.winner.userId);
   if (winUser) sendWinnerNotification(winUser.email, winUser.name, result.winner.displayDate).catch(() => {});
   if (result.loserIds) {

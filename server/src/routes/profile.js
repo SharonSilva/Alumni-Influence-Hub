@@ -1,18 +1,14 @@
-
- // Defines URL paths and validation rules only.
- //All logic delegated to profileController.
- 
 const express  = require('express');
 const path     = require('path');
 const multer   = require('multer');
 const { body } = require('express-validator');
 const ctrl     = require('../controllers/ProfileController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate } = require('../middleware/Auth');
 
 const router = express.Router();
 router.use(authenticate);
 
-//  Multer (photo upload)
+// Multer (photo upload)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, process.env.UPLOAD_DIR || './uploads'),
   filename:    (req, file, cb) => cb(null, `profile-${req.user.id}-${Date.now()}${path.extname(file.originalname).toLowerCase()}`),
@@ -28,7 +24,7 @@ const upload = multer({
   },
 });
 
-// Core profile 
+//Core profile
 router.get('/',          ctrl.getProfile);
 router.put('/', [
   body('bio').optional().trim().isLength({ max: 1000 }),

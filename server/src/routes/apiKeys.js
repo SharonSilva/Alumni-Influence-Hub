@@ -1,13 +1,13 @@
 const express  = require('express');
 const { body } = require('express-validator');
 const ctrl     = require('../controllers/ApikeyController');
-const { authenticate, requireAdmin } = require('../middleware/auth');
- 
+const { authenticate, requireAdmin } = require('../middleware/Auth');
+
 const VALID_SCOPES = ['read:featured', 'read:alumni', 'read:sponsors', 'read:events'];
- 
+
 const router = express.Router();
 router.use(authenticate, requireAdmin);
- 
+
 router.get('/',               ctrl.listKeys);
 router.post('/', [
   body('name').trim().notEmpty(),
@@ -20,6 +20,5 @@ router.post('/', [
 router.get('/:keyId',         ctrl.getKeyDetail);
 router.get('/:keyId/stats',   ctrl.getKeyStats);
 router.delete('/:keyId',      ctrl.revokeKey);
- 
+
 module.exports = router;
- 

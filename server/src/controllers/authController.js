@@ -1,12 +1,3 @@
-/**
- * controllers/authController.js  –  CONTROLLER layer
- *
- * Handles HTTP concerns for authentication:
- *   - Reads from req, calls Models, sends res
- *   - Contains NO business logic or data queries (that is the Model's job)
- *   - Contains NO HTML/template rendering (that is the View's job)
- */
-
 const jwt  = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User  = require('../models/User');
@@ -16,7 +7,7 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emai
 const JWT_SECRET     = process.env.JWT_SECRET || 'eastminster-alumni-secret-changeme';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
-// ─── Helper 
+// Helper 
 function handleValidation(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -26,7 +17,7 @@ function handleValidation(req, res) {
   return true;
 }
 
-// ─── register 
+// register 
 async function register(req, res) {
   if (!handleValidation(req, res)) return;
 
@@ -50,7 +41,7 @@ async function register(req, res) {
   });
 }
 
-// ─── verifyEmail 
+// verifyEmail 
 function verifyEmail(req, res) {
   if (!handleValidation(req, res)) return;
 
@@ -67,7 +58,7 @@ function verifyEmail(req, res) {
   res.json({ success: true, message: 'Email verified successfully. You can now log in.' });
 }
 
-// ─── login 
+// login 
 async function login(req, res) {
   if (!handleValidation(req, res)) return;
 
@@ -88,20 +79,20 @@ async function login(req, res) {
   res.json({ success: true, data: { user: User.toPublic(user), token } });
 }
 
-// ─── logout
+// logout 
 function logout(req, res) {
   console.log(`[LOGOUT] User ${req.user.id} at ${new Date().toISOString()}`);
   res.json({ success: true, message: 'Logged out successfully. Please discard your token.' });
 }
 
-// ─── forgotPassword
+// forgotPassword 
 async function forgotPassword(req, res) {
   if (!handleValidation(req, res)) return;
 
   const GENERIC = 'If that email is registered, a reset link has been sent.';
   const user = User.findByEmail(req.body.email);
 
-  // Always 200 — never reveal whether email exists
+  // Always 200  never reveal whether email exists
   if (!user) return res.json({ success: true, message: GENERIC });
 
   const expiryMinutes = parseInt(process.env.RESET_TOKEN_EXPIRES_MINUTES || '30');
@@ -111,7 +102,7 @@ async function forgotPassword(req, res) {
   res.json({ success: true, message: GENERIC });
 }
 
-// ─── resetPassword
+//reset password
 async function resetPassword(req, res) {
   if (!handleValidation(req, res)) return;
 

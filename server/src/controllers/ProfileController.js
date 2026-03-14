@@ -1,7 +1,3 @@
-//Handles HTTP req/res for all profile operations.
- // Delegates all data access to Profile model.
-
-
 const { validationResult } = require('express-validator');
 const Profile = require('../models/Profile');
 
@@ -14,14 +10,14 @@ function handleValidation(req, res) {
   return true;
 }
 
-// getProfile 
+// getProfile
 function getProfile(req, res) {
   const profile = Profile.findByUserId(req.user.id);
   if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
   res.json({ success: true, data: Profile.buildFullView(profile) });
 }
 
-//updateProfile 
+// updateProfile
 function updateProfile(req, res) {
   if (!handleValidation(req, res)) return;
   const updated = Profile.update(req.user.id, req.body);
@@ -29,7 +25,7 @@ function updateProfile(req, res) {
   res.json({ success: true, data: updated });
 }
 
-//uploadPhoto 
+// uploadPhoto 
 function uploadPhoto(req, res) {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
   const updated = Profile.update(req.user.id, { photoUrl: `/uploads/${req.file.filename}` });
@@ -63,7 +59,6 @@ function getCompletion(req, res) {
 }
 
 // Sub-resource controller factory 
-
 function subResourceController(collectionKey, label) {
   return {
     list(req, res) {

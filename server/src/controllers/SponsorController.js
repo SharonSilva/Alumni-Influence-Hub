@@ -1,4 +1,3 @@
-
 const { validationResult } = require('express-validator');
 const { db, id }           = require('../db');
 
@@ -14,7 +13,9 @@ function listSponsors(req, res) {
 
 function createSponsor(req, res) {
   if (!handleValidation(req, res)) return;
-  const newSponsor = { id: id(), name: req.body.name, category: req.body.category, description: req.body.description || '', createdAt: new Date().toISOString() };
+  const newSponsor = { id: id(), name: req.body.name,
+     category: req.body.category,
+      description: req.body.description || '', createdAt: new Date().toISOString() };
   db.sponsors.push(newSponsor);
   res.status(201).json({ success: true, data: newSponsor });
 }
@@ -25,7 +26,13 @@ function makeOffer(req, res) {
   if (!sponsor) return res.status(404).json({ success: false, message: 'Sponsor not found' });
   const profile = db.profiles.find(p => p.id === req.body.profileId);
   if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
-  const offer = { id: id(), sponsorId: req.params.sponsorId, profileId: req.body.profileId, certificationName: req.body.certificationName, offerAmount: parseFloat(req.body.offerAmount), status: 'pending', createdAt: new Date().toISOString() };
+  const offer = { id: id(), 
+                  sponsorId: req.params.sponsorId, 
+                  profileId: req.body.profileId, 
+                  certificationName: req.body.certificationName, 
+                  offerAmount: parseFloat(req.body.offerAmount), 
+                  status: 'pending', createdAt: new Date().toISOString() };
+
   db.sponsorships.push(offer);
   res.status(201).json({ success: true, data: offer });
 }

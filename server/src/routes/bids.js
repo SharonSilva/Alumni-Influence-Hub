@@ -1,12 +1,7 @@
-
-// Defines URL paths and validation rules only.
-// All logic delegated to bidController.
- 
-
 const express  = require('express');
 const { body } = require('express-validator');
 const ctrl     = require('../controllers/bidController');
-const { authenticate, requireAdmin } = require('../middleware/auth');
+const { authenticate, requireAdmin } = require('../middleware/Auth');
 
 const router = express.Router();
 

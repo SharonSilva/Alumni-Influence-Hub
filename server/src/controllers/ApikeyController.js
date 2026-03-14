@@ -1,7 +1,3 @@
-/**
- * controllers/apiKeyController.js  –  CONTROLLER layer
- */
-
 const { validationResult } = require('express-validator');
 const ApiKey = require('../models/ApiKey');
 

@@ -1,10 +1,10 @@
-
-// routes/winners.js  –  ROUTE layer (MVC: thin router)
-
+/**
+ * routes/winners.js  –  ROUTE layer (MVC: thin router)
+ */
 
 const express = require('express');
 const ctrl    = require('../controllers/winnerController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate } = require('../middleware/Auth');
 
 const router = express.Router();
 

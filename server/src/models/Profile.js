@@ -1,10 +1,3 @@
-
- // All data access for profiles and their sub-resources:
- //   degrees, certifications, licences, courses, employmentHistory
- 
- // Contains no HTTP logic — only data retrieval and mutation methods.
- 
-
 const { db, id } = require('../db');
 
 class Profile {
@@ -18,7 +11,9 @@ class Profile {
     return db.profiles.find(p => p.id === profileId) || null;
   }
 
- //Update allow field on profile 
+
+    // Update allowed fields on a profile.
+
   static update(userId, updates) {
     const profile = Profile.findByUserId(userId);
     if (!profile) return null;
@@ -28,8 +23,9 @@ class Profile {
     return profile;
   }
 
+
    // Recalculate profile completion percentage and update profileCompleted flag.
-   
+
   static recalculateCompletion(profile) {
     const checks = [
       !!profile.bio,
@@ -48,7 +44,7 @@ class Profile {
 
 
     // Build the full profile view including all sub-resources.
-   
+
   static buildFullView(profile) {
     const percent = Profile.recalculateCompletion(profile);
     return {
@@ -62,8 +58,10 @@ class Profile {
     };
   }
 
-  //  Sub-resource generic helpers 
+  // Sub-resource generic helpers 
 
+
+    // Generic method to add an item to any sub-resource collection.
 
   static addSubResource(collection, profileId, data) {
     const newItem = { id: id(), profileId, ...data, createdAt: new Date().toISOString() };
@@ -73,6 +71,8 @@ class Profile {
     return newItem;
   }
 
+
+    // Generic method to update a sub-resource item owned by a profile.
 
   static updateSubResource(collection, itemId, profileId, updates) {
     const item = db[collection].find(i => i.id === itemId && i.profileId === profileId);
@@ -84,6 +84,8 @@ class Profile {
   }
 
 
+    // Generic method to delete a sub-resource item owned by a profile.
+
   static deleteSubResource(collection, itemId, profileId) {
     const idx = db[collection].findIndex(i => i.id === itemId && i.profileId === profileId);
     if (idx === -1) return false;
@@ -93,7 +95,8 @@ class Profile {
     return true;
   }
 
-  // Named sub-resource accessors 
+  // Named sub-resource accessors
+
   static getDegrees(profileId)        { return db.degrees.filter(d => d.profileId === profileId); }
   static getCertifications(profileId) { return db.certifications.filter(c => c.profileId === profileId); }
   static getLicences(profileId)       { return db.licences.filter(l => l.profileId === profileId); }

@@ -1,22 +1,9 @@
-
- // Provides three middleware functions:
- //   authenticate    – Validates a JWT Bearer token (alumni / admin sessions)
- //   authenticateKey – Validates a Developer API key (public client access)
- //   requireAdmin    – Ensures the authenticated user has role 'admin'
- 
-// Security notes:
- // JWT is verified with HS256 and the JWT_SECRET env variable
- // Unverified email accounts are blocked from authenticated endpoints
- // Revoked API keys (active: false) are rejected
- // Every API-key request is logged to db.apiUsageLogs for statistics
- 
-
 const jwt = require('jsonwebtoken');
 const { db } = require('../db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'eastminster-alumni-secret-changeme';
 
-// JWT Authentication
+// JWT Authentication 
 function authenticate(req, res, next) {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -43,8 +30,7 @@ function authenticate(req, res, next) {
   }
 }
 
-//API Key Authentication
-
+// API Key Authentication 
 function authenticateKey(requiredScopes = []) {
   return (req, res, next) => {
     const key = req.headers['x-api-key'];
@@ -80,7 +66,7 @@ function authenticateKey(requiredScopes = []) {
       endpoint:   req.path,
       method:     req.method,
       timestamp:  new Date().toISOString(),
-      statusCode: null,
+      statusCode: null, // filled by response hook in routes if needed
     });
 
     req.apiKey = apiKey;
@@ -88,7 +74,7 @@ function authenticateKey(requiredScopes = []) {
   };
 }
 
-// Admin Guard
+// Admin Guard 
 function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ success: false, message: 'Admin access required' });

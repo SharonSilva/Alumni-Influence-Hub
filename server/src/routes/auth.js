@@ -1,12 +1,7 @@
-
- // Defines URL paths and input validation rules only.
- // All request handling is delegated to authController.
- 
-
 const express     = require('express');
 const { body, query } = require('express-validator');
 const ctrl        = require('../controllers/authController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate } = require('../middleware/Auth');
 
 const router = express.Router();
 

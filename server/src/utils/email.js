@@ -1,11 +1,4 @@
 
- // Sends emails via Nodemailer.  In development / test mode it logs the
- // email to stdout instead of actually sending it (no SMTP needed to run
- // the project out of the box).
-
- // When SMTP_HOST / SMTP_USER env vars are set (production), real emails
-// are sent via the configured SMTP server.
- 
 
 const nodemailer = require('nodemailer');
 
@@ -46,13 +39,11 @@ function buildTransport() {
 const transport = buildTransport();
 const FROM = process.env.EMAIL_FROM || '"Alumni Influencers" <noreply@eastminster.ac.uk>';
 
-// ─── Email Templates ──────────────────────────────────────────────────────────
+// Email Templates 
 
-/**
- * Send email verification link after registration.
- * @param {string} to       - Recipient email address
- * @param {string} token    - The raw verification token
- */
+
+  // Send email verification link after registration.
+
 async function sendVerificationEmail(to, token) {
   const link = `http://localhost:${process.env.PORT || 3000}/api/auth/verify-email?token=${token}`;
   return transport.sendMail({
@@ -64,11 +55,9 @@ async function sendVerificationEmail(to, token) {
   });
 }
 
-/**
- * Send a password reset link.
- * @param {string} to    - Recipient email
- * @param {string} token - Raw reset token
- */
+
+ //Send a password reset link.
+
 async function sendPasswordResetEmail(to, token) {
   const link = `http://localhost:${process.env.PORT || 3000}/api/auth/reset-password?token=${token}`;
   return transport.sendMail({
@@ -80,12 +69,9 @@ async function sendPasswordResetEmail(to, token) {
   });
 }
 
-/**
- * Notify an alumnus they won the daily bid.
- * @param {string} to        - Recipient email
- * @param {string} name      - Alumnus name
- * @param {string} date      - Display date string
- */
+
+ // Notify an alumnus they won the daily bid.
+
 async function sendWinnerNotification(to, name, date) {
   return transport.sendMail({
     from:    FROM,
@@ -96,12 +82,9 @@ async function sendWinnerNotification(to, name, date) {
   });
 }
 
-/**
- * Notify losing bidders they did not win.
- * @param {string} to   - Recipient email
- * @param {string} name - Alumnus name
- * @param {string} date - Date string for which they bid
- */
+
+  // Notify losing bidders they did not win.
+
 async function sendLostBidNotification(to, name, date) {
   return transport.sendMail({
     from:    FROM,

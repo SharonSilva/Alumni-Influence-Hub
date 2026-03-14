@@ -38,7 +38,7 @@ function registerForEvent(req, res) {
   if (db.eventAttendees.find(a => a.eventId === event.id && a.userId === req.user.id)) return res.status(409).json({ success: false, message: 'Already registered' });
   const att = { id: id(), eventId: event.id, userId: req.user.id, registeredAt: new Date().toISOString().split('T')[0] };
   db.eventAttendees.push(att);
-  res.status(201).json({ success: true, data: att, message: event.unlocksExtraBid ? '✅ Registered! This event unlocks a 4th bid slot this month.' : '✅ Registered.' });
+  res.status(201).json({ success: true, data: att, message: event.unlocksExtraBid ? ' Registered! This event unlocks a 4th bid slot this month.' : ' Registered.' });
 }
 
 module.exports = { listEvents, getEvent, createEvent, registerForEvent };

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alumni Influencers — University of Eastminster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- NAV -->
+  <nav id="navbar" class="hidden">
+    <div class="nav-brand">Alumni<span>Hub</span></div>
+    <div class="nav-links">
+      <a href="#dashboard" class="nav-link">Dashboard</a>
+      <a href="#profile" class="nav-link">My Profile</a>
+      <a href="#bid" class="nav-link">Bidding</a>
+      <a href="#featured" class="nav-link">Featured</a>
+    </div>
+    <div class="nav-right">
+      <span id="nav-user-name" class="nav-user"></span>
+      <button id="btn-logout" class="btn-ghost">Logout</button>
+    </div>
+  </nav>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <!-- PAGES -->
+  <main id="app">
+
+    <!-- ── AUTH PAGE ─────────────────────────────────── -->
+    <section id="page-auth" class="page active">
+      <div class="auth-split">
+        <div class="auth-left">
+          <div class="auth-brand">
+            <div class="brand-mark">AI</div>
+            <h1>Alumni<br><span>Influencers</span></h1>
+            <p>University of Eastminster × Phantasmagoria Ltd</p>
+          </div>
+          <div class="auth-tagline">
+            <blockquote>"Your credentials, your credibility, your spotlight."</blockquote>
+          </div>
+        </div>
+        <div class="auth-right">
+          <div class="auth-card">
+            <div class="auth-tabs">
+              <button class="tab-btn active" data-tab="login">Sign In</button>
+              <button class="tab-btn" data-tab="register">Register</button>
+            </div>
+
+            <!-- LOGIN -->
+            <div id="tab-login" class="tab-pane active">
+              <div class="field">
+                <label>Email</label>
+                <input id="login-email" type="email" placeholder="you@alumni.eastminster.ac.uk">
+              </div>
+              <div class="field">
+                <label>Password</label>
+                <input id="login-password" type="password" placeholder="••••••••">
+              </div>
+              <button id="btn-login" class="btn-primary full">Sign In</button>
+              <p class="auth-hint">
+                <a href="#" id="link-forgot">Forgot password?</a>
+              </p>
+            </div>
+
+            <!-- REGISTER -->
+            <div id="tab-register" class="tab-pane">
+              <div class="field">
+                <label>Full Name</label>
+                <input id="reg-name" type="text" placeholder="Your full name">
+              </div>
+              <div class="field">
+                <label>University Email</label>
+                <input id="reg-email" type="email" placeholder="you@alumni.eastminster.ac.uk">
+              </div>
+              <div class="field">
+                <label>Password</label>
+                <input id="reg-password" type="password" placeholder="Min 8 chars, uppercase, number, symbol">
+              </div>
+              <button id="btn-register" class="btn-primary full">Create Account</button>
+              <p class="auth-hint">After registering, check your email to verify your account.</p>
+            </div>
+
+            <!-- FORGOT PASSWORD -->
+            <div id="tab-forgot" class="tab-pane">
+              <p class="field-hint">Enter your university email and we'll send a reset link.</p>
+              <div class="field">
+                <label>Email</label>
+                <input id="forgot-email" type="email" placeholder="you@alumni.eastminster.ac.uk">
+              </div>
+              <button id="btn-forgot" class="btn-primary full">Send Reset Link</button>
+              <p class="auth-hint"><a href="#" id="link-back-login">← Back to login</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DASHBOARD ──────────────────────────────────── -->
+    <section id="page-dashboard" class="page">
+      <div class="page-content">
+        <div class="page-header">
+          <h2>Dashboard</h2>
+          <p id="dashboard-greeting">Welcome back</p>
+        </div>
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="stat-label">Wallet Balance</div>
+            <div id="stat-wallet" class="stat-value">£0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Monthly Appearances</div>
+            <div id="stat-monthly" class="stat-value">0/3</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Profile Completion</div>
+            <div id="stat-completion" class="stat-value">0%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Today's Status</div>
+            <div id="stat-bid-status" class="stat-value">—</div>
+          </div>
+        </div>
+
+        <div class="dashboard-two-col">
+          <div class="card">
+            <h3>Today's Featured Alumni</h3>
+            <div id="featured-preview">
+              <p class="empty-state">No featured alumni today</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Recent Winners</h3>
+            <div id="recent-winners">
+              <p class="empty-state">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PROFILE PAGE ───────────────────────────────── -->
+    <section id="page-profile" class="page">
+      <div class="page-content">
+        <div class="page-header">
+          <h2>My Profile</h2>
+          <div id="completion-bar-wrap">
+            <div class="completion-label">Profile Completion: <span id="completion-pct">0%</span></div>
+            <div class="completion-track"><div id="completion-fill" class="completion-fill"></div></div>
+          </div>
+        </div>
+
+        <!-- Core Info -->
+        <div class="card">
+          <h3>Personal Information</h3>
+          <div class="profile-photo-row">
+            <div class="photo-wrap">
+              <img id="profile-photo-img" src="" alt="Profile photo" style="display:none">
+              <div id="profile-photo-placeholder" class="photo-placeholder">No Photo</div>
+            </div>
+            <div class="photo-upload-area">
+              <label class="btn-secondary" for="photo-input">Upload Photo</label>
+              <input id="photo-input" type="file" accept=".jpg,.jpeg,.png,.webp" style="display:none">
+              <p class="field-hint">JPG, PNG or WebP, max 5MB</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Biography</label>
+              <textarea id="prof-bio" rows="3" placeholder="Tell students about your journey..."></textarea>
+            </div>
+            <div class="field">
+              <label>LinkedIn URL</label>
+              <input id="prof-linkedin" type="url" placeholder="https://linkedin.com/in/yourname">
+            </div>
+            <div class="field">
+              <label>Current Role</label>
+              <input id="prof-role" type="text" placeholder="e.g. Senior Software Engineer">
+            </div>
+            <div class="field">
+              <label>Current Employer</label>
+              <input id="prof-employer" type="text" placeholder="e.g. Google DeepMind">
+            </div>
+            <div class="field">
+              <label>Location</label>
+              <input id="prof-location" type="text" placeholder="e.g. London, UK">
+            </div>
+            <div class="field">
+              <label>Graduation Year</label>
+              <input id="prof-year" type="number" placeholder="e.g. 2020" min="1950" max="2030">
+            </div>
+          </div>
+          <button id="btn-save-profile" class="btn-primary">Save Changes</button>
+        </div>
+
+        <!-- Sub-resources -->
+        <div class="sub-resource-tabs">
+          <button class="sub-tab active" data-sub="degrees">Degrees</button>
+          <button class="sub-tab" data-sub="certifications">Certifications</button>
+          <button class="sub-tab" data-sub="licences">Licences</button>
+          <button class="sub-tab" data-sub="courses">Courses</button>
+          <button class="sub-tab" data-sub="employment">Employment</button>
+        </div>
+
+        <!-- DEGREES -->
+        <div id="sub-degrees" class="sub-pane card active">
+          <h3>Degrees</h3>
+          <div id="list-degrees" class="item-list"></div>
+          <div class="add-form">
+            <h4>Add Degree</h4>
+            <div class="form-grid">
+              <div class="field"><label>Title</label><input id="deg-title" placeholder="BSc Computer Science"></div>
+              <div class="field"><label>Institution</label><input id="deg-institution" placeholder="University of Eastminster"></div>
+              <div class="field"><label>Degree Page URL</label><input id="deg-url" type="url" placeholder="https://eastminster.ac.uk/courses/..."></div>
+              <div class="field"><label>Completion Date</label><input id="deg-date" type="date"></div>
+            </div>
+            <button class="btn-primary" onclick="addSubResource('degrees', {title: id('deg-title').value, institution: id('deg-institution').value, url: id('deg-url').value, completedDate: id('deg-date').value})">Add Degree</button>
+          </div>
+        </div>
+
+        <!-- CERTIFICATIONS -->
+        <div id="sub-certifications" class="sub-pane card">
+          <h3>Professional Certifications</h3>
+          <div id="list-certifications" class="item-list"></div>
+          <div class="add-form">
+            <h4>Add Certification</h4>
+            <div class="form-grid">
+              <div class="field"><label>Name</label><input id="cert-name" placeholder="AWS Solutions Architect"></div>
+              <div class="field"><label>Issuer</label><input id="cert-issuer" placeholder="Amazon Web Services"></div>
+              <div class="field"><label>Course Page URL</label><input id="cert-url" type="url" placeholder="https://aws.amazon.com/certification/..."></div>
+              <div class="field"><label>Completion Date</label><input id="cert-date" type="date"></div>
+            </div>
+            <button class="btn-primary" onclick="addSubResource('certifications', {name: id('cert-name').value, issuer: id('cert-issuer').value, url: id('cert-url').value, completedDate: id('cert-date').value})">Add Certification</button>
+          </div>
+        </div>
+
+        <!-- LICENCES -->
+        <div id="sub-licences" class="sub-pane card">
+          <h3>Professional Licences</h3>
+          <div id="list-licences" class="item-list"></div>
+          <div class="add-form">
+            <h4>Add Licence</h4>
+            <div class="form-grid">
+              <div class="field"><label>Name</label><input id="lic-name" placeholder="Chartered Engineer (CEng)"></div>
+              <div class="field"><label>Awarding Body</label><input id="lic-body" placeholder="Engineering Council UK"></div>
+              <div class="field"><label>Awarding Body URL</label><input id="lic-url" type="url" placeholder="https://www.engc.org.uk/..."></div>
+              <div class="field"><label>Completion Date</label><input id="lic-date" type="date"></div>
+            </div>
+            <button class="btn-primary" onclick="addSubResource('licences', {name: id('lic-name').value, awardingBody: id('lic-body').value, url: id('lic-url').value, completedDate: id('lic-date').value})">Add Licence</button>
+          </div>
+        </div>
+
+        <!-- COURSES -->
+        <div id="sub-courses" class="sub-pane card">
+          <h3>Short Professional Courses</h3>
+          <div id="list-courses" class="item-list"></div>
+          <div class="add-form">
+            <h4>Add Course</h4>
+            <div class="form-grid">
+              <div class="field"><label>Course Name</label><input id="crs-name" placeholder="Applied Machine Learning"></div>
+              <div class="field"><label>Provider</label><input id="crs-provider" placeholder="Coursera"></div>
+              <div class="field"><label>Course Page URL</label><input id="crs-url" type="url" placeholder="https://coursera.org/learn/..."></div>
+              <div class="field"><label>Completion Date</label><input id="crs-date" type="date"></div>
+            </div>
+            <button class="btn-primary" onclick="addSubResource('courses', {name: id('crs-name').value, provider: id('crs-provider').value, url: id('crs-url').value, completedDate: id('crs-date').value})">Add Course</button>
+          </div>
+        </div>
+
+        <!-- EMPLOYMENT -->
+        <div id="sub-employment" class="sub-pane card">
+          <h3>Employment History</h3>
+          <div id="list-employment" class="item-list"></div>
+          <div class="add-form">
+            <h4>Add Employment</h4>
+            <div class="form-grid">
+              <div class="field"><label>Job Title</label><input id="emp-title" placeholder="Software Engineer"></div>
+              <div class="field"><label>Employer</label><input id="emp-employer" placeholder="Google"></div>
+              <div class="field"><label>Start Date</label><input id="emp-start" type="date"></div>
+              <div class="field"><label>End Date</label><input id="emp-end" type="date"></div>
+              <div class="field field-check">
+                <label><input id="emp-current" type="checkbox"> Currently working here</label>
+              </div>
+            </div>
+            <button class="btn-primary" onclick="addSubResource('employment', {jobTitle: id('emp-title').value, employer: id('emp-employer').value, startDate: id('emp-start').value, endDate: id('emp-end').value || null, current: id('emp-current').checked})">Add Employment</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── BIDDING PAGE ────────────────────────────────── -->
+    <section id="page-bid" class="page">
+      <div class="page-content">
+        <div class="page-header">
+          <h2>Bidding</h2>
+          <p>Bid for tomorrow's Alumni of the Day slot</p>
+        </div>
+
+        <div class="bid-grid">
+          <div class="card bid-status-card">
+            <h3>Monthly Status</h3>
+            <div id="monthly-status" class="monthly-display">
+              <div class="slots-visual" id="slots-visual"></div>
+              <p id="monthly-text">Loading...</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Tomorrow's Slot</h3>
+            <div id="tomorrow-slot">
+              <p class="empty-state">Loading...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Your Bid Today</h3>
+          <div id="current-bid-display">
+            <p class="empty-state">You have not placed a bid today.</p>
+          </div>
+
+          <div id="bid-form-area">
+            <div class="bid-form-row">
+              <div class="field">
+                <label>Bid Amount (£)</label>
+                <input id="bid-amount" type="number" min="1" step="0.01" placeholder="Enter amount">
+                <p class="field-hint" id="wallet-hint">Available balance: loading...</p>
+              </div>
+              <button id="btn-place-bid" class="btn-primary bid-btn">Place Bid</button>
+            </div>
+          </div>
+
+          <div id="bid-update-area" style="display:none">
+            <div class="bid-form-row">
+              <div class="field">
+                <label>Increase Bid To (£)</label>
+                <input id="bid-new-amount" type="number" min="1" step="0.01" placeholder="New higher amount">
+              </div>
+              <button id="btn-update-bid" class="btn-primary bid-btn">Increase Bid</button>
+              <button id="btn-cancel-bid" class="btn-danger bid-btn">Cancel Bid</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Bid History</h3>
+          <div id="bid-history-list">
+            <p class="empty-state">Loading...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEATURED PAGE ──────────────────────────────── -->
+    <section id="page-featured" class="page">
+      <div class="page-content">
+        <div class="page-header">
+          <h2>Featured Alumni</h2>
+          <p>Today's Alumni of the Day</p>
+        </div>
+        <div id="featured-full">
+          <p class="empty-state">Loading...</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
