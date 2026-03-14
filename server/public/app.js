@@ -4,6 +4,7 @@
 var token = localStorage.getItem('token') || null;
 var currentUser = null;
 var currentBidId = null;
+var resetToken = null;
 
 // ── Helpers ──────────────────────────────────────────────
 function id(elId) { return document.getElementById(elId); }
@@ -328,6 +329,53 @@ window.deleteSubResource = function (resource, itemId) {
     .catch(function (e) { toast(e.message, 'error'); });
 };
 
+// ── Sub-resource Add Buttons ──────────────────────────────
+id('btn-add-degree').addEventListener('click', function () {
+  addSubResource('degrees', {
+    title:         id('deg-title').value,
+    institution:   id('deg-institution').value,
+    url:           id('deg-url').value,
+    completedDate: id('deg-date').value,
+  });
+});
+
+id('btn-add-cert').addEventListener('click', function () {
+  addSubResource('certifications', {
+    name:          id('cert-name').value,
+    issuer:        id('cert-issuer').value,
+    url:           id('cert-url').value,
+    completedDate: id('cert-date').value,
+  });
+});
+
+id('btn-add-licence').addEventListener('click', function () {
+  addSubResource('licences', {
+    name:          id('lic-name').value,
+    awardingBody:  id('lic-body').value,
+    url:           id('lic-url').value,
+    completedDate: id('lic-date').value,
+  });
+});
+
+id('btn-add-course').addEventListener('click', function () {
+  addSubResource('courses', {
+    name:          id('crs-name').value,
+    provider:      id('crs-provider').value,
+    url:           id('crs-url').value,
+    completedDate: id('crs-date').value,
+  });
+});
+
+id('btn-add-employment').addEventListener('click', function () {
+  addSubResource('employment', {
+    jobTitle:  id('emp-title').value,
+    employer:  id('emp-employer').value,
+    startDate: id('emp-start').value,
+    endDate:   id('emp-end').value || null,
+    current:   id('emp-current').checked,
+  });
+});
+
 // ── Bidding ───────────────────────────────────────────────
 function loadBidding() {
   api('/api/bids/monthly').then(function (r) {
@@ -499,6 +547,16 @@ function loadFeatured() {
 
 // ── Boot ──────────────────────────────────────────────────
 (function init() {
+  // If URL has ?token= it's a password reset link
+  var urlParams = new URLSearchParams(window.location.search);
+  var tokenParam = urlParams.get('token');
+  if (tokenParam) {
+    resetToken = tokenParam;
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+    id('page-reset').classList.add('active');
+    id('navbar').classList.add('hidden');
+    return;
+  }
   if (token) {
     id('navbar').classList.remove('hidden');
     api('/api/auth/me').then(function (r) {
@@ -512,3 +570,19 @@ function loadFeatured() {
   }
   route();
 })();
+
+// ── Reset Password Page ───────────────────────────────────
+id('btn-reset-password').addEventListener('click', function () {
+  var pw  = id('reset-password').value;
+  var cpw = id('reset-confirm').value;
+  if (!pw) { toast('Enter a new password', 'error'); return; }
+  if (pw !== cpw) { toast('Passwords do not match', 'error'); return; }
+  if (!resetToken) { toast('Invalid or missing reset token', 'error'); return; }
+  api('/api/auth/reset-password', {
+    method: 'POST',
+    body: { token: resetToken, password: pw }
+  }).then(function () {
+    toast('Password reset! Redirecting to login...', 'success');
+    setTimeout(function () { window.location.href = '/'; }, 2000);
+  }).catch(function (e) { toast(e.message, 'error'); });
+});

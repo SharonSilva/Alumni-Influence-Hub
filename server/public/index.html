@@ -100,6 +100,34 @@
       </div>
     </section>
 
+
+    <!-- ── RESET PASSWORD PAGE ───────────────────────── -->
+    <section id="page-reset" class="page">
+      <div class="auth-split">
+        <div class="auth-left">
+          <div class="auth-brand">
+            <div class="brand-mark">AI</div>
+            <h1>Alumni<br><span>Influencers</span></h1>
+            <p>University of Eastminster × Phantasmagoria Ltd</p>
+          </div>
+          <div class="auth-tagline">
+            <blockquote>"Your credentials, your credibility, your spotlight."</blockquote>
+          </div>
+        </div>
+        <div class="auth-right">
+          <div class="auth-card">
+            <h2 style="font-family:Playfair Display,serif;color:var(--gold);margin-bottom:1.5rem;font-size:1.4rem">Reset Password</h2>
+            <div style="display:flex;flex-direction:column;gap:1rem">
+              <div class="field"><label>New Password</label><input id="reset-password" type="password" placeholder="Min 8 chars, uppercase, number, symbol"></div>
+              <div class="field"><label>Confirm Password</label><input id="reset-confirm" type="password" placeholder="Repeat new password"></div>
+              <button id="btn-reset-password" class="btn-primary full">Set New Password</button>
+              <p class="auth-hint"><a href="/">Back to login</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── DASHBOARD ──────────────────────────────────── -->
     <section id="page-dashboard" class="page">
       <div class="page-content">
@@ -218,7 +246,7 @@
               <div class="field"><label>Degree Page URL</label><input id="deg-url" type="url" placeholder="https://eastminster.ac.uk/courses/..."></div>
               <div class="field"><label>Completion Date</label><input id="deg-date" type="date"></div>
             </div>
-            <button class="btn-primary" onclick="addSubResource('degrees', {title: id('deg-title').value, institution: id('deg-institution').value, url: id('deg-url').value, completedDate: id('deg-date').value})">Add Degree</button>
+            <button id="btn-add-degree" class="btn-primary">Add Degree</button>
           </div>
         </div>
 
@@ -234,7 +262,7 @@
               <div class="field"><label>Course Page URL</label><input id="cert-url" type="url" placeholder="https://aws.amazon.com/certification/..."></div>
               <div class="field"><label>Completion Date</label><input id="cert-date" type="date"></div>
             </div>
-            <button class="btn-primary" onclick="addSubResource('certifications', {name: id('cert-name').value, issuer: id('cert-issuer').value, url: id('cert-url').value, completedDate: id('cert-date').value})">Add Certification</button>
+            <button id="btn-add-cert" class="btn-primary">Add Certification</button>
           </div>
         </div>
 
@@ -250,7 +278,7 @@
               <div class="field"><label>Awarding Body URL</label><input id="lic-url" type="url" placeholder="https://www.engc.org.uk/..."></div>
               <div class="field"><label>Completion Date</label><input id="lic-date" type="date"></div>
             </div>
-            <button class="btn-primary" onclick="addSubResource('licences', {name: id('lic-name').value, awardingBody: id('lic-body').value, url: id('lic-url').value, completedDate: id('lic-date').value})">Add Licence</button>
+            <button id="btn-add-licence" class="btn-primary">Add Licence</button>
           </div>
         </div>
 
@@ -266,7 +294,7 @@
               <div class="field"><label>Course Page URL</label><input id="crs-url" type="url" placeholder="https://coursera.org/learn/..."></div>
               <div class="field"><label>Completion Date</label><input id="crs-date" type="date"></div>
             </div>
-            <button class="btn-primary" onclick="addSubResource('courses', {name: id('crs-name').value, provider: id('crs-provider').value, url: id('crs-url').value, completedDate: id('crs-date').value})">Add Course</button>
+            <button id="btn-add-course" class="btn-primary">Add Course</button>
           </div>
         </div>
 
@@ -285,7 +313,7 @@
                 <label><input id="emp-current" type="checkbox"> Currently working here</label>
               </div>
             </div>
-            <button class="btn-primary" onclick="addSubResource('employment', {jobTitle: id('emp-title').value, employer: id('emp-employer').value, startDate: id('emp-start').value, endDate: id('emp-end').value || null, current: id('emp-current').checked})">Add Employment</button>
+            <button id="btn-add-employment" class="btn-primary">Add Employment</button>
           </div>
         </div>
       </div>

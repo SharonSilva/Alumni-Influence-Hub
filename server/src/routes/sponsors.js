@@ -1,7 +1,3 @@
-/**
- * routes/sponsors.js  –  ROUTE layer (MVC: thin router)
- */
-
 const express  = require('express');
 const { body } = require('express-validator');
 const ctrl     = require('../controllers/SponsorController');

@@ -1,10 +1,3 @@
-/**
- * controllers/winnerController.js  –  CONTROLLER layer
- *
- * Reads req, calls Winner model, sends res.
- * No data queries. No business logic.
- */
-
 const { db, today } = require('../db');
 const Profile       = require('../models/Profile');
 

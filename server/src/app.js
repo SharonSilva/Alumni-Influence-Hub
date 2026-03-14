@@ -9,7 +9,7 @@ const cron      = require('node-cron');
 const { seed }                   = require('./db');
 const { swaggerUi, swaggerSpec } = require('./utils/swagger');
 
-// Routes
+// ── Routes ────────────────────────────────────────────────────────────────────
 const authRouter     = require('./routes/auth');
 const profileRouter  = require('./routes/profile');
 const bidsRouter     = require('./routes/bids');
@@ -23,7 +23,7 @@ const publicRouter   = require('./routes/public');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// Security Headers 
+// ── 1. Security Headers ───────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -35,7 +35,7 @@ app.use(helmet({
   },
 }));
 
-// CORS 
+// ── 2. CORS ───────────────────────────────────────────────────────────────────
 const corsOrigin = process.env.CORS_ORIGIN || '*';
 app.use(cors({
   origin:         corsOrigin === '*' ? '*' : corsOrigin.split(','),
@@ -43,7 +43,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
 }));
 
-// Rate Limiting
+// ── 3. Rate Limiting ──────────────────────────────────────────────────────────
 app.use('/api', rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max:      parseInt(process.env.RATE_LIMIT_MAX)        || 100,
@@ -54,26 +54,25 @@ app.use('/api/auth/login',           rateLimit({ windowMs: 15 * 60 * 1000, max: 
 app.use('/api/auth/register',        rateLimit({ windowMs: 60 * 60 * 1000, max: 5,  message: { success: false, message: 'Too many registration attempts.' } }));
 app.use('/api/auth/forgot-password', rateLimit({ windowMs: 60 * 60 * 1000, max: 5,  message: { success: false, message: 'Too many reset requests.' } }));
 
-// Body Parsing
+// ── 4. Body Parsing ───────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-//  Static uploads 
+// ── 5. Static File Serving ────────────────────────────────────────────────────
+// Serve uploaded profile photos at /uploads/filename
 app.use('/uploads', express.static(path.resolve(process.env.UPLOAD_DIR || './uploads')));
-
-
-// Static frontend 
+// Serve the frontend web app from /public (index.html, app.js, style.css)
 app.use(express.static(path.join(__dirname, '../public')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/index.html')));
-// Swagger UI 
+
+// ── 6. Swagger UI ─────────────────────────────────────────────────────────────
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customSiteTitle: 'Alumni Influencers API Docs',
-  customCss:       '.swagger-ui .topbar { background-color: #1a1a2e; }',
-  swaggerOptions:  { persistAuthorization: true },
+  customSiteTitle:  'Alumni Influencers API Docs',
+  customCss:        '.swagger-ui .topbar { background-color: #1a1a2e; }',
+  swaggerOptions:   { persistAuthorization: true },
 }));
 app.get('/api-docs.json', (req, res) => res.json(swaggerSpec));
 
-//Request Logger 
+// ── 7. Request Logger ─────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'test') {
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
@@ -81,7 +80,7 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-// Route Mounting 
+// ── 8. API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth',     authRouter);
 app.use('/api/profile',  profileRouter);
 app.use('/api/bids',     bidsRouter);
@@ -92,36 +91,33 @@ app.use('/api/wallet',   walletRouter);
 app.use('/api/keys',     apiKeysRouter);
 app.use('/api/public',   publicRouter);
 
-// Root 
-app.get('/', (req, res) => {
-  res.json({
-    name:        'Alumni Influencers API',
-    version:     '1.0.0',
-    description: 'Phantasmagoria Ltd × University of Eastminster',
-    docs:        `http://localhost:${PORT}/api-docs`,
-    endpoints: {
-      auth:     '/api/auth',    profile:  '/api/profile',
-      bids:     '/api/bids',    winners:  '/api/winners',
-      sponsors: '/api/sponsors',events:   '/api/events',
-      wallet:   '/api/wallet',  keys:     '/api/keys',
-      public:   '/api/public',
-    },
-  });
+// ── 9. Password reset redirect ───────────────────────────────────────────────
+// The reset email sends /api/auth/reset-password?token=... 
+// We intercept GET requests to that path and serve the frontend instead
+// The frontend reads the ?token= from the URL and shows the reset form
+app.get('/api/auth/reset-password', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-//404 
+// ── 10. Catch-all: serve frontend for any non-API route ──────────────────────
+app.get('/{*path}', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// ── 10. 404 for unknown API routes ───────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} not found` });
 });
 
-//  Global Error Handler 
+// ── 11. Global Error Handler ──────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('[ERROR]', err.message);
   res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
-// Automated Midnight Winner Selection 
+// ── 12. Automated Midnight Winner Selection ───────────────────────────────────
 const WINNER_HOUR = process.env.WINNER_SELECT_HOUR_UTC || '0';
 if (process.env.NODE_ENV !== 'test') {
   cron.schedule(`0 ${WINNER_HOUR} * * *`, async () => {
@@ -148,7 +144,7 @@ if (process.env.NODE_ENV !== 'test') {
       console.error('[CRON ERROR]', err.message);
     }
   });
-  console.log(`  Cron job: winner selection at ${WINNER_HOUR}:00 UTC daily`);
+  console.log(` Cron job: winner selection at ${WINNER_HOUR}:00 UTC daily`);
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
@@ -157,7 +153,8 @@ async function start() {
   if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
       console.log(`\n  Alumni Influencers API  →  http://localhost:${PORT}`);
-      console.log(`  Swagger Docs           →  http://localhost:${PORT}/api-docs`);
+      console.log(`  Web App               →  http://localhost:${PORT}`);
+      console.log(`  Swagger Docs          →  http://localhost:${PORT}/api-docs`);
     });
   }
 }
