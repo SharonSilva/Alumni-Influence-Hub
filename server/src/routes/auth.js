@@ -16,9 +16,13 @@ const passwordRules = body('password')
 
 router.post('/register', [
   body('email')
-    .isEmail().withMessage('Valid email required')
-    .normalizeEmail({ gmail_dots: false })
+    .isEmail().withMessage('Valid email required')  // reject anything that is not a valid email 
+    .normalizeEmail({ gmail_dots: false })        // canonicalises email -removes user + soam@ tricks 
     .custom(email => {
+
+      // checks domain specifically and must end with @alumni.eastminster.ac.uk
+      // OR @eastminster.ac.uk (for admin accounts)
+
       if (!email.endsWith(`@${DOMAIN}`) && !email.endsWith('@eastminster.ac.uk'))
         throw new Error(`Must use a @${DOMAIN} university email`);
       return true;

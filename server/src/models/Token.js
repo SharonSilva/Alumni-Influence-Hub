@@ -5,16 +5,18 @@ class Token {
 
    // Generate a cryptographically secure random token string.
   static generate() {
-    return crypto.randomBytes(32).toString('hex');
+    return crypto.randomBytes(32).toString('hex'); //crypto random bytes uses OS-level cryptographically secure random number generator
   }
+  //32 bytes = 256 bits of entropy
+  //.toDtring("hex" produces a 64 character hexadecimal string )
+  //2^256 possible values which is not feasible to brute-force
 
     // Create and store an email verification token.
-
   static createEmailToken(userId, expiryHours = 24) {
-    const raw      = Token.generate();
+    const raw      = Token.generate(); // 256-bit random hex
     const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000).toISOString();
     db.emailTokens.push({ id: id(), userId, token: raw, expiresAt, used: false });
-    return raw;
+    return raw; //raw token sent in email never stored anywhere else
   }
 
 
